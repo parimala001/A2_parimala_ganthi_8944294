@@ -13,7 +13,5 @@
     if($db->connect_error){
         die('Something went wrong... please try again later...');
     }
-    else{
-        echo(' connection sucessful');
-    }
+   
 ?>
