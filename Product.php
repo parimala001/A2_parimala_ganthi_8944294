@@ -15,7 +15,7 @@ function getProducts() {
 
         // Check the query 
         if ($result) {
-            // Initialize an array to store products
+            //  array to store products
             $products = array();
 
             // Fetch each row from the result set
@@ -24,17 +24,18 @@ function getProducts() {
                 $products[] = $row;
             }
 
-            // Return products as JSON
-            echo json_encode($products);
+            // Return products
+            return ["data" => $products];
         } else {
-            // If the query fails, output an error message
-            echo "Error: " . $db->error;
+            //  error message
+            return ["error" => "Failed to fetch products"];
         }
     } catch(Exception $e) {
-        // Handle any errors 
-        echo "Error: " . $e->getMessage();
+        // Handle errors 
+        return ["error" => $e->getMessage()];
     }
 }
+
 // Function to create a new product
 function createProduct($data) {
     global $db;
@@ -53,14 +54,17 @@ function createProduct($data) {
         // Execute query
         $result = $db->query($sql);
 
-        // Check if the query was successful
+        // Check the query was successful
         if ($result) {
+            // Return JSON response
             echo json_encode(["message" => "Product created successfully"]);
         } else {
+            // Return JSON response
             echo json_encode(["error" => "Failed to create product"]);
         }
     } catch(Exception $e) {
         // Handle any errors 
+        // Return JSON response
         echo json_encode(["error" => $e->getMessage()]);
     }
 }
@@ -86,13 +90,13 @@ function updateProduct($data) {
 
         // Check if the query was successful
         if ($result) {
-            echo json_encode(["message" => "Product updated successfully"]);
+            return ["message" => "Product updated successfully"];
         } else {
-            echo json_encode(["error" => "Failed to update product"]);
+            return ["error" => "Failed to update product"];
         }
     } catch(Exception $e) {
         // Handle any errors 
-        echo json_encode(["error" => $e->getMessage()]);
+        return ["error" => $e->getMessage()];
     }
 }
 
@@ -109,13 +113,13 @@ function deleteProduct($product_id) {
 
         // Check if the query was successful
         if ($result) {
-            echo json_encode(["message" => "Product deleted successfully"]);
+            return ["message" => "Product deleted successfully"];
         } else {
-            echo json_encode(["error" => "Failed to delete product"]);
+            return ["error" => "Failed to delete product"];
         }
     } catch(Exception $e) {
         // Handle any errors 
-        echo json_encode(["error" => $e->getMessage()]);
+        return ["error" => $e->getMessage()];
     }
 }
 
@@ -128,31 +132,42 @@ if ($method == 'POST') {
     $data = json_decode(file_get_contents('php://input'), true);
 
     // Call function to create product
-    createProduct($data);
+    $response = createProduct($data);
+    echo json_encode($response);
 } 
-// Handle PUT request to update an existing product
 else if ($method == 'PUT') {
     // Get the request body
     $data = json_decode(file_get_contents('php://input'), true);
 
     // Call function to update product
-    updateProduct($data);
+    $response = updateProduct($data);
+    echo json_encode($response);
 } 
-// Handle DELETE request to delete an existing product
 else if ($method == 'DELETE') {
     // Get the product ID from the request URL or request body
     $product_id = $_GET['product_id'] ?? null;
 
     if ($product_id !== null) {
         // Call function to delete product
-        deleteProduct($product_id);
+        $response = deleteProduct($product_id);
+        echo json_encode($response);
     } else {
-        echo json_encode(["error" => "Product ID is required"]);
+        // If product_id is not found in the URL, try to get it from the request body
+        $data = json_decode(file_get_contents('php://input'), true);
+        $product_id = $data['product_id'] ?? null;
+
+        if ($product_id !== null) {
+            // Call function to delete product
+            $response = deleteProduct($product_id);
+            echo json_encode($response);
+        } else {
+            echo json_encode(["error" => "Product ID is required"]);
+        }
     }
 } 
-// Handle other HTTP methods (e.g., GET)
 else {
     // Call function to fetch all products
-    getProducts();
+    $response = getProducts();
+    echo json_encode($response);
 }
 ?>
