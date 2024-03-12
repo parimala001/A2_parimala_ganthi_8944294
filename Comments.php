@@ -24,20 +24,127 @@ function getComments() {
                 $comments[] = $row;
             }
 
-            // Return comments
-            echo json_encode($comments);
+            // Return comments as JSON
+            return json_encode($comments);
         } else {
             // Error message
-            echo json_encode(["error" => "Failed to fetch comments"]);
+            return json_encode(["error" => "Failed to fetch comments"]);
         }
     } catch(Exception $e) {
         // Handle errors 
-        echo json_encode(["error" => $e->getMessage()]);
+        return json_encode(["error" => $e->getMessage()]);
     }
 }
 
+// Function to create a new comment
+function createComment($data) {
+    global $db;
 
-// Call function to fetch all comments
-    getComments();
+    try {
+        // Extract data from the request
+        $product_id = $data['product_id'];
+        $product_name = $data['product_name'];
+        $user = $data['user'];
+        $rating = $data['rating'];
+        $images = $data['images'];
+        $text = $data['text'];
 
+        // SQL to insert a new comment
+        $sql = "INSERT INTO comments (product_id, product_name, user, rating, images, text) VALUES ('$product_id', '$product_name', '$user', '$rating', '$images', '$text')";
+
+        // Execute query
+        $result = $db->query($sql);
+
+        // Check the query was successful
+        if ($result) {
+            // Get the last inserted comment ID
+            $comment_id = $db->insert_id;
+            // Construct the response JSON
+            $response = [
+                "comment_id" => $comment_id,
+                "message" => "Comment created successfully"
+            ];
+            // Return the response
+            return json_encode($response);
+        } else {
+            // Return an error response
+            return json_encode(["error" => "Failed to create comment"]);
+        }
+    } catch(Exception $e) {
+        // Handle any errors 
+        return json_encode(["error" => $e->getMessage()]);
+    }
+}
+
+// Function to update a comment
+function updateComment($data) {
+    global $db;
+
+    try {
+        // Extract data from the request
+        $product_id = $data['product_id'];
+        $product_name = $data['product_name'];
+        $user = $data['user'];
+        $rating = $data['rating'];
+        $images = $data['images'];
+        $text = $data['text'];
+
+        // SQL to update the comment
+        $sql = "UPDATE comments SET product_name='$product_name', user='$user', rating='$rating', images='$images', text='$text' WHERE product_id='$product_id'";
+
+        // Execute query
+        $result = $db->query($sql);
+
+        // Check if the query was successful
+        if ($result) {
+            return json_encode(["message" => "Comment updated successfully"]);
+        } else {
+            return json_encode(["error" => "Failed to update comment"]);
+        }
+    } catch(Exception $e) {
+        // Handle any errors 
+        return json_encode(["error" => $e->getMessage()]);
+    }
+}
+
+// Function to delete a comment
+function deleteComment($product_id) {
+    global $db;
+
+    try {
+        // SQL to delete the comment
+        $sql = "DELETE FROM comments WHERE product_id='$product_id'";
+
+        // Execute query
+        $result = $db->query($sql);
+
+        // Check if the query was successful
+        if ($result) {
+            return json_encode(["message" => "Comment deleted successfully"]);
+        } else {
+            return json_encode(["error" => "Failed to delete comment"]);
+        }
+    } catch(Exception $e) {
+        // Handle any errors 
+        return json_encode(["error" => $e->getMessage()]);
+    }
+}
+
+// Determine the HTTP request method
+$method = $_SERVER['REQUEST_METHOD'];
+
+// Handle POST request to create a new comment
+if ($method == 'POST') {
+    // Get the request body
+    $data = json_decode(file_get_contents('php://input'), true);
+
+    // Call function to create comment and echo the response
+    echo createComment($data);
+} 
+
+ 
+else {
+    // Call function to fetch all comments and echo the response
+    echo getComments();
+}
 ?>
