@@ -141,10 +141,33 @@ if ($method == 'POST') {
     // Call function to create comment and echo the response
     echo createComment($data);
 } 
+// Handle PUT request to update an existing comment
+else if ($method == 'PUT') {
+    // Get the request body
+    $data = json_decode(file_get_contents('php://input'), true);
 
- 
+    // Call function to update comment, encode the response, and echo it
+    echo json_encode(updateComment($data));
+} 
+// Handle DELETE request to delete an existing comment
+else if ($method == 'DELETE') {
+    // Get the request body
+    $data = json_decode(file_get_contents('php://input'), true);
+
+    // Get the product ID from the request body
+    $product_id = $data['product_id'] ?? null;
+
+    if ($product_id !== null) {
+        // Call function to delete comment, encode the response, and echo it
+        echo json_encode(deleteComment($product_id));
+    } else {
+        echo json_encode(["error" => "Product ID is required"]);
+    }
+} 
 else {
-    // Call function to fetch all comments and echo the response
-    echo getComments();
+    // Call function to fetch all comments, encode the response, and echo it
+    echo json_encode(getComments());
 }
+
+
 ?>
